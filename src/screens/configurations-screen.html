@@ -1,0 +1,156 @@
+<dom-module id="configurations-screen">
+    <style>
+        :host{
+
+        }
+        .page-holder {
+            margin: 10px;
+            box-shadow: 0 1px 2px rgba(6, 33, 63, 0.13);
+            padding: 0 15px 20px;
+        }
+        paper-slider {
+            width: 100%;
+        }
+        .title {
+            padding: 10px 0;
+        }
+        .sub-title {
+            padding: 5px 0;
+        }
+    </style>
+    <template>
+        <paper-header-panel mode="waterfall">
+            <paper-toolbar id="mainToolbar">
+                <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                <div>Настройка визуализатора</div>
+            </paper-toolbar>
+            <div class="page-holder">
+                <section>
+                    <div class="title">Включить визуализацию:</div>
+                    <div class="visualization-toggle">
+                        <paper-toggle-button id="on_off"></paper-toggle-button>
+                    </div>
+                </section>
+                <section>
+                    <div class="visualization-type">
+                        <div class="title">Тип визуализации:</div>
+                        <paper-radio-group id="vis_type" selected="frequency_bar">
+                            <paper-radio-button name="frequency_bar">frequency_bar</paper-radio-button>
+                            <br/>
+                            <paper-radio-button name="oscilloscope">oscilloscope</paper-radio-button>
+                        </paper-radio-group>
+                        <hr/>
+                    </div>
+                </section>
+                <section>
+                    <div class="frequency_bar-settings">
+                        <div class="title">Настройка frequency_bar:</div>
+                        <ul>
+                            <li class="line-width">
+                                <div class="sub-title">Ширина полосы, px * 0.1</div>
+                                <paper-slider id="line_width" pin snaps min="1" max="20"></paper-slider>
+                            </li>
+                            <li class="space-between">
+                                <div class="sub-title">Растояние между полосами, px * 0.1</div>
+                                <paper-slider id="space_between" pin snaps min="1" max="20" value="1"></paper-slider>
+                            </li>
+                        </ul>
+                        <hr/>
+                    </div>
+                </section>
+                <paper-button id="default_config" raised>Default</paper-button>
+            </div>
+        </paper-header-panel>
+    </template>
+    <script>
+        Polymer({
+            is: "configurations-screen",
+            properties: {
+                visualizer_status: {
+                    type: Boolean
+                },
+                visualizer_name: {
+                    type: String
+                },
+                line_width: {
+                    type: Number
+                },
+                space_between: {
+                    type: Number
+                }
+            },
+            ready: function(){
+                var self = this,
+                    ls_vis_config = JSON.parse(localStorage.vis_config);
+
+                this.visualizer_status = ls_vis_config.visualizer_status;
+                this.visualizer_name = ls_vis_config.visualizer_name;
+                this.line_width = ls_vis_config.line_width;
+                this.space_between = ls_vis_config.space_between;
+
+                this.$.on_off.checked = this.visualizer_status;
+                this.$.vis_type.selected = this.visualizer_name;
+                this.$.line_width.value = this.line_width * 10;
+                this.$.space_between.value = this.space_between *10;
+                //this.update_config_properties();
+
+                this.$.on_off.addEventListener("iron-change", function(e, val){
+                    self.visualizer_status = this.checked;
+                    self.update_config_properties();
+                });
+
+                this.$.vis_type.addEventListener("iron-select", function(){
+                    self.visualizer_name = this.selected;
+                    self.update_config_properties();
+                });
+
+                this.$.line_width.addEventListener("change",function(){
+                    self.line_width = (this.value * 0.1).toFixed(1);
+                    self.update_config_properties();
+                });
+
+                this.$.space_between.addEventListener("change",function(){
+                    self.space_between = (this.value * 0.1).toFixed(1);
+                    self.update_config_properties();
+                });
+                this.$.default_config.addEventListener("click", function () {
+                            app.set_default_config();
+
+                            self.$.on_off.checked = app.vis_config.visualizer_status;
+                            self.$.vis_type.selected = app.vis_config.visualizer_name;
+                            self.$.line_width.value = app.vis_config.line_width * 10;
+                            self.$.space_between.value = app.vis_config.space_between *10;
+                        }
+                );
+            },
+            scrollHandler: function(e, val){
+                var percent = (val.target.scrollTop * 100 / val.target.scrollHeight).toFixed(2);
+                console.log("scrolled:" ,percent, "%");
+            },
+            update_config_properties: function(){
+                /*console.log (
+                        {
+                            visualizer_status   : this.visualizer_status,
+                            visualizer_name     : this.visualizer_name,
+                            line_width          : this.line_width,
+                            space_between       : this.space_between
+                        }
+                );
+                localStorage.vis_config = JSON.stringify({
+                    visualizer_status   : this.visualizer_status,
+                    visualizer_name     : this.visualizer_name,
+                    line_width          : this.line_width,
+                    space_between       : this.space_between
+                });*/
+                var properties = JSON.stringify({
+                    visualizer_status   : this.visualizer_status,
+                    visualizer_name     : this.visualizer_name,
+                    line_width          : this.line_width,
+                    space_between       : this.space_between
+                });
+                app.set_vis_config(properties);
+                ///alert(JSON.parse(localStorage.vis_config).visualizer_name);
+            }
+        });
+    </script>
+</dom-module>

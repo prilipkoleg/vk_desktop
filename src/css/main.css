@@ -1,0 +1,61 @@
+body {
+    background: #fafafa;
+    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #333;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#main-holder {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: stretch;
+    align-items: stretch;
+}
+
+paper-header-panel paper-toolbar{
+    border-right: 1px solid #293980;
+}
+paper-header-panel #mainPanel{
+    border-right: 1px solid #ccc;
+}
+
+#main-holder .top {
+    flex-basis: 32px;
+    height: 32px;
+    background: #ededed;
+}
+
+#main-holder .middle {
+    flex: 1;
+    position: relative;
+}
+
+#main-holder .bottom {
+    flex-basis: 50px;
+    height: 50px;
+    background: #ededed;
+}
+#user-header-panel{
+
+}
+#user-header-panel #topBar{
+    height: 100%;
+    padding: 0;
+    position: relative;
+}
+
+.menu-item {
+    cursor: pointer;
+}
+
+.menu-item:focus {
+    background: none;
+}
+.menu-item.iron-selected {
+    background: rgba(74, 143, 255, 0.18);
+}

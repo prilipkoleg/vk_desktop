@@ -1,0 +1,86 @@
+<dom-module id="user-profile">
+    <style>
+        :host {
+            display: block;
+            width: 100%;
+            height: 100%;
+            color: #fff;
+            text-align: center;
+            /*margin-top: 120px;*/
+            position: relative;
+        }
+        .background {
+            @apply(--layout-fit);
+            overflow: hidden;
+        }
+        .background > img {
+            position: absolute;
+            top: -50%;
+            left: -10%;
+            width: 120%;
+            -webkit-filter: blur(4px);
+        }
+        .user_img {
+            padding-top: 20px;
+        }
+        .user_img > img {
+            -webkit-border-radius: 50%;
+            -moz-border-radius: 50%;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: inherit;
+            position: relative;
+        }
+
+        .user_full_name {
+            font-size: 18px;
+            padding-top: 20px;
+            position: relative;
+        }
+    </style>
+    <template>
+        <iron-ajax auto
+                    url="{{request_url()}}"
+                    handle-as="json"
+                    on-response="handleResponse"
+                    last-response="{{data}}"></iron-ajax>
+        <div class="holder">
+                <div class="user_profile">
+                    <div class="background"><img src$="{{data.response.0.photo_big}}" /></div>
+                    <div class="user_img">
+                        <img src="[[data.response.0.photo_100]]" alt="logo"/>
+                    </div>
+                    <div class="user_full_name">
+                        <span>[[data.response.0.last_name]]</span> <span>[[data.response.0.first_name]]</span>
+                    </div>
+                </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'user-profile',
+            properties : {
+                data: {
+                    type: Object,
+                    observer: '_dataChange'
+                },
+                User: {
+                    type: Object
+                }
+            },
+            request_url : function (){
+                var api_fields = "photo_50,photo_100,photo_big";
+                return "https://api.vk.com/method/users.get?fields="+ api_fields +"&v=5.37&access_token=" + app.token;
+            },
+            _dataChange: function(data) {
+                app.curUser = data.response[0];
+//                this.User = data.response[0];
+                //app.say( "", data.response[0]);
+            },
+            handleResponse: function(){
+
+            }
+
+        })
+    </script>
+</dom-module>

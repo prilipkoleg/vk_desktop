@@ -1,0 +1,48 @@
+<dom-module id="main-view">
+    <style>
+        .content {
+            background: rgba(0, 255, 210, 0.09);
+        }
+        paper-toolbar {
+            border: 1px solid #004D40;
+        }
+        :host {
+            display: block;
+            color: #333;
+            margin-left: -1px;
+        }
+
+        #screenHolder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+        }
+    </style>
+    <template>
+
+        <div id="screenHolder"></div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "main-view",
+            properties: {
+                route: {
+                    type: String,
+                    notify: true,
+                    observer: "_route_change"
+                }
+            },
+            _route_change: function(newRoute, oldRoute){
+                console.log('Route are change:', newRoute,"to", oldRoute);
+                var holder =  this.$.screenHolder;
+                holder.innerHTML = "";
+
+                var screen = document.createElement(newRoute + "-screen");
+                holder.appendChild(screen);
+            }
+        })
+    </script>
+</dom-module>

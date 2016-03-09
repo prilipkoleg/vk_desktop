@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VK_Desktop</title>
+
+    <link rel="stylesheet" href="css/main.css"/>
+
+    <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+
+    <link rel="import" href="./elements/dependencies.html"/>
+
+</head>
+<body unresolved class="fullbleed layout vertical">
+<div id="main-holder">
+    <div class="middle">
+        <template is="dom-bind" id="app">
+            <paper-drawer-panel id="app-drawer">
+                <paper-header-panel id="user-header-panel" drawer class="flex" mode="standard">
+                    <paper-toolbar class="tall">
+                        <user-profile></user-profile>
+                    </paper-toolbar>
+                    <div class="content fit">
+                        <paper-menu id="nav">
+                            <paper-item class="menu-item" data-route="audio" on-tap="navigate">
+                                <span>Аудиозаписи</span>
+                                <paper-ripple></paper-ripple>
+                            </paper-item>
+                            <paper-item class="menu-item" data-route="friends" on-tap="navigate">
+                                <span>Друзья</span>
+                                <paper-ripple></paper-ripple>
+                            </paper-item>
+                            <paper-item class="menu-item" data-route="configurations" on-tap="navigate">
+                                <span>Настройка</span>
+                                <paper-ripple></paper-ripple>
+                            </paper-item>
+                            <paper-item class="menu-item" on-tap="NOlogout">
+                                <span>Выход</span>
+                                <paper-ripple></paper-ripple>
+                            </paper-item>
+                        </paper-menu>
+                    </div>
+                </paper-header-panel>
+                <main-view main class="main" route="{{route}}"></main-view>
+            </paper-drawer-panel>
+        </template>
+    </div>
+    <div class="bottom">
+        <audio id="app-player" is="app-player" preload="auto"></audio>
+    </div>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>

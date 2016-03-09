@@ -1,0 +1,24 @@
+{
+  "name": "vk_desktop",
+  "version": "0.0.1",
+  "description": "polymer app",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "src/bower_components",
+    "bower_components"
+  ],
+  "dependencies": {
+    "iron-elements": "PolymerElements/iron-elements#^1.0.0",
+    "jquery": "~2.1.4",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.0",
+    "polymer": "Polymer/polymer#^1.1.0",
+    "underscore": "~1.8.3"
+  },
+  "homepage": "",
+  "main": "./index.js",
+  "authors": [
+    "prilipkoleg@gmail.com"
+  ]
+}

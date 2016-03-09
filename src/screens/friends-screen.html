@@ -1,0 +1,129 @@
+<dom-module id="friends-screen">
+    <style>
+        :host{
+
+        }
+        .page-holder {
+            margin: 10px;
+            box-shadow: 0 1px 2px rgba(6, 33, 63, 0.13);
+        }
+        .friends-count {
+            padding: 10px 5px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #ededed;;
+        }
+        .list {
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            list-style: none;
+         }
+        .item{
+            padding: 10px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        .item:not(:first-child) {
+            border-top: 1px solid #ededed;
+        }
+        .item:hover {
+            background: #F4F4F4;
+        }
+        .friend-logo {
+            margin: 0;
+            padding: 0;
+        }
+        .friend-logo {
+            min-width: 100px;
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+        .online {
+            color: #bbb;
+        }
+        .userInfo{
+            padding: 10px;
+        }
+        .friend-name {
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .friend-status {
+            font-size: 15px;
+            font-style: italic;
+        }
+
+    </style>
+    <template>
+        <paper-header-panel condensens on-content-scroll="scrollHandler" mode="standard">
+            <paper-toolbar id="mainToolbar" animate>
+                <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                <div>Друзья</div>
+            </paper-toolbar>
+            <iron-ajax id="ajax"
+                        auto
+                        url="{{_getFriendReqsUrl()}}"
+                       handle-as="json"
+                       on-response="handleResponse"
+                        last-responese="{{data}}"></iron-ajax>
+            <div class="page-holder">
+                <div class="friends-count">
+                    <template is="dom-if" if="{{friendsCount}}">
+                        Всего: <span>[[friendsCount]]</span> друзей.
+                    </template>
+                </div>
+                <ul class="list">
+                    <template is="dom-repeat" items="[[friends]]" as="friend">
+                        <li class="item" class="">
+                            <div class="friend-logo">
+                                <img src="[[friend.photo_100]]" alt="user-logo"/>
+                            </div>
+                            <div class="userInfo">
+                                <div class="friend-name">
+                                    <span>[[friend.first_name]]</span> <span>[[friend.last_name]]</span>
+                                    <template is="dom-if" if="{{friend.online}}"><span class="online">(OnLine)</span></template>
+                                </div>
+                                <div class="friend-status">
+                                    <span>[[friend.status]]</span>
+                                </div>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </paper-header-panel>
+    </template>
+    <script>
+        Polymer({
+            is: "friends-screen",
+                properties: {
+                    friendsCount: Number,
+                    friends: {
+                        type: Array,
+                        notify: true
+                    }
+                },
+            ready: function(){
+                //this.$.ajax.url = "https://api.vk.com/method/friends.get?&v=5.37&access_token=" + app.token;
+            },
+            _getFriendReqsUrl: function (){
+                var fields = "photo_100,online,status";
+                return "https://api.vk.com/method/friends.get?v=5.37&order=hints&fields="+ fields +"&access_token=" + app.token;
+            },
+            handleResponse: function(e, data){
+                //console.log(data.response.response.items);
+                this.friendsCount = data.response.response.count;
+                this.friends = data.response.response.items;
+            },
+            scrollHandler: function(e, val){
+                var percent = (val.target.scrollTop * 100 / val.target.scrollHeight).toFixed(2);
+                console.log("scrolled:" ,percent, "%");
+            }
+        });
+    </script>
+</dom-module>

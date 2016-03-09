@@ -1,0 +1,578 @@
+<dom-module id="app-player">
+    <style>
+        #app-player-view{
+            display: flex;
+            padding: 0 10px 0 0;
+            position: relative;
+            height: 50px;
+            overflow: hidden;
+        }
+
+        .ac-controls {
+            position: relative;
+            width: 256px;
+            z-index: 100;
+            height: 50px;
+            border-right: 1px solid #D9E0E7;
+            color: #ffffff;
+        }
+
+        #canvas {
+            position: absolute;
+            width: 256px;
+            height: 50px;
+            left: 0;
+            /*opacity: 0.3;*/
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .player-btn {
+            flex-basis: 32px;
+            padding: 0 10px;
+            line-height: 50px;
+            cursor: pointer;
+            height: 50px;
+            display: inline-block;
+        }
+        .player-btn iron-icon {
+            --iron-icon-height: 32px;
+            --iron-icon-width: 32px;
+        }
+        .played-time {
+            flex-basis: 80px;
+            padding: 0 10px;
+            line-height: 50px;
+            height: 50px;
+            text-align: center;
+            display: inline-block;
+            font-size: 24px;
+        }
+        .player-info {
+            flex: 1;
+            height: 35px;
+            padding: 10px 10px 5px;
+            position: relative;
+            z-index: 100;
+            overflow: hidden;
+        }
+        .player-info .title {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            min-height: 20px;
+        }
+        .player-info:hover .title #scroller{
+            text-overflow: clip;
+            position: absolute;
+            cursor: default;
+            /*animation: go-left-right 3s infinite ease-in-out;
+            -webkit-animation: go-left-right 3s infinite ease-in-out;
+            -webkit-animation: title_animation 10s infinite infinite;
+            -moz-animation: title_animation 10s infinite infinite;
+            -webkit-animation: scroll 5s infinite linear;
+            -moz-animation: scroll 5s infinite linear;
+            animation: title_animation 10s infinite linear;*/
+        }
+        /* Современные браузеры, кроме Chrome, Opera, Safari */
+        @keyframes go-left-right {   /* назовём анимацию: "go-left-right" */
+            0% { right:inherit }
+            /*25% { left: auto; right:2%; }
+            50% { right: auto; left: 2%; }
+            50% { left: 100%; }*/
+            100% { right:2%; }
+        }
+
+        /* Префикс для Chrome, Opera, Safari */
+        @-webkit-keyframes go-left-right {
+            from {
+                left: 0px;
+            }
+            to {
+                left: calc(100% - 50px);
+            }
+        }
+        @-webkit-keyframes title_animation {
+            0%{left:100%;}
+            100%{left:-100%;}
+        }
+        @-moz-keyframes title_animation {
+            0%{left:100%;}
+            100%{left:-100%;}
+        }
+        .ac-track-controls .progress {
+            height: 10px;
+            position: relative;
+            margin-right: 5px;
+        }
+        .ac-track-controls .progress > paper-progress {
+            position: absolute;
+            top: 2px;
+            width: 100%;
+            height: 6px;
+        }
+        .ac-track-controls .progress > paper-progress {
+            --paper-progress-active-color: #369;
+        }
+        paper-progress {
+            --paper-progress-secondary-color: #A6D1F8;
+        }
+        .ac-track-controls .progress paper-slider {
+            width: auto;
+            position: absolute;
+            top: -12px;
+            left: -16px;
+            right: -16px;
+        }
+
+        #slider /deep/ #sliderBar.paper-slider {
+                           height: 6px;
+                       }
+
+        #slider /deep/ #progressContainer {
+                           background-color: transparent;
+                       }
+
+        #slider /deep/ #activeProgress {
+                           background-color: transparent;
+                       }
+
+        #slider /deep/ #sliderKnobInner {
+                           position: relative;
+                           top: 1px;
+                           background-color: #369;
+                       }
+
+        .ac-track-controls .volume {
+            flex-basis: 80px;
+            margin-left: 30px;
+            height: 10px;
+            position: relative;
+        }
+
+        #volume-slider {
+            width: auto;
+            position: absolute;
+            top: -12px;
+            left: -16px;
+            right: -16px;
+        }
+
+        #volume-slider /deep/ #sliderBar.paper-slider {
+                                  height: 6px;
+                              }
+
+        #volume-slider /deep/ #activeProgress {
+                                  background-color: #369;
+                              }
+
+        #volume-slider /deep/ #sliderKnobInner {
+                                  position: relative;
+                                  top: 1px;
+                                  background-color: #369;
+                              }
+
+        .volume-label {
+            position: absolute;
+            top: -6px;
+            left: -26px;
+
+        }
+
+        .volume-label iron-icon {
+            color: #369;
+        }
+
+        /*#volume-slider /deep/ #sliderKnobInner:before {
+            top: -2px!important;
+            left: -8px!important;
+            background: red;
+        }
+
+        #volume-slider /deep/ #sliderKnobInner:after {
+            content: attr(value) "%"!important;
+            top: -2px!important;
+            left: -8px!important;
+        }*/
+
+    </style>
+    <template>
+        <iron-ajax id="player_ajax"
+                   handle-as="json"
+                   on-response="handleResponse"></iron-ajax>
+        <div id="app-player-view">
+            <canvas id="canvas" width="256" height="50"></canvas>
+            <div class="ac-controls layout horizontal">
+                <span class="prev-btn player-btn" on-click="moveToPrev"><iron-icon icon="av:skip-previous"></iron-icon></span>
+                <span class="play-btn player-btn" on-click="togglePlay"><iron-icon icon$="[[playBtnIcon(status)]]"></iron-icon></span>
+                <span class="play-btn player-btn" on-click="stopPlay"><iron-icon icon="av:stop"></iron-icon></span>
+                <span class="next-btn player-btn" on-click="moveToNext"><iron-icon icon="av:skip-next"></iron-icon></span>
+                <span class="played-time layout vertical center-center">
+                    <span>[[playedTime]]</span>
+                </span>
+            </div>
+            <div class="player-info">
+                <div class="title">
+                    <div id="scroller"><span>[[currentTrack.artist]]</span>&nbsp;-&nbsp;<span>[[currentTrack.title]]</span>
+                    </div>
+                </div>
+                <div class="ac-track-controls layout horizontal">
+                    <div class="progress flex">
+                        <paper-progress id="progress" max="{{currentTrack.duration}}" value$="[[progressTime]]" secondary-progress$="[[buffer]]"></paper-progress>
+                        <paper-slider id="slider" max="{{currentTrack.duration}}" value$="{{progressTime}}"></paper-slider>
+                    </div>
+                    <div class="volume">
+                        <div class="volume-label"><iron-icon icon="av:volume-up"></iron-icon></div>
+                        <paper-slider id="volume-slider" min="0" max="100" step="10" value$="{{currentVolume}}"></paper-slider>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "app-player",
+            extends: 'audio',
+            properties : {
+                playlist : {
+                    type: Array
+                },
+                audioCount: {
+                    type: Number
+                },
+                currentTrack:{
+                    type: Object,
+                    notify: true,
+                    observer: "_currentTrackChanged"
+                },
+                currentTrackIndex: {
+                    type: Number,
+                    notify: true
+                },
+                status: {
+                    type: String,
+                    notify: true,
+                    value: "pause"
+                },
+                playedTime: {
+                    type: String,
+                    notify: true,
+                    value: '0:00'
+                },
+                progressTime: {
+                    type: String,
+                    notify: true
+                },
+                updateProcessTime: {
+                    type: Boolean,
+                    value: true
+                },
+                currentVolume: {
+                    type: String,
+                    notify: true
+                },
+                buffer: {
+                    type: String,
+                    notify: true
+                }/*,
+                vis_config: {
+                    type: Object,
+                    value: JSON.parse(localStorage.getItem("vis_config")),
+                    notify : true //,
+//                    observer: "visualizer_controller"  // - ошибка - раньше чем нужно вызывает вункцию
+                }*/
+            },
+            ready: function(){
+                var holder = document.createElement('div');
+                holder.className = "app-player-holder";
+                this.parentNode.appendChild(holder);
+                holder.appendChild(this);
+                holder.appendChild(this.$["app-player-view"]);
+            },
+            start : function(){
+                var self = this;
+                //var buffer = audioCtx.createBufferSourse();
+                //app.say('buffer', buffer);
+
+
+                this.$.player_ajax.url = "https://api.vk.com/method/audio.get?v=5.37&access_token=" + app.token;
+                this.$.player_ajax.generateRequest();
+
+                //call visualizer:
+                this.visualizer_controller();
+
+                this.currentVolume = this.volume*50;
+                this.buffer = 0;
+
+                //event listeners
+                this.addEventListener("play", function(e){
+                    this.status = "play";
+                });
+
+                this.addEventListener('progress', this.bufferization);
+                this.addEventListener('loadstart', this.bufferization);
+
+
+                this.addEventListener("pause", function(e){
+                    this.status = "pause";
+                });
+
+                this.addEventListener('ended', function(e){
+                    self.moveToNext();
+                    setTimeout(function(){
+                        self.play();
+                    }, 1000);
+                });
+
+                this.addEventListener('timeupdate', function(e){
+                    var minutes, seconds;
+
+                    if(this.updateProcessTime){
+                        this.progressTime = e.target.currentTime;
+                    }
+
+                    minutes = parseInt(e.target.currentTime / 60, 10);
+                    seconds = parseInt(e.target.currentTime % 60, 10);
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                    this.playedTime = minutes + ":" + seconds;
+                });
+                this.$.slider.addEventListener('mousedown', function(e){
+                    self.updateProcessTime = false;
+                });
+                this.$.slider.addEventListener('mouseup', function(e){
+                    self.updateProcessTime = true;
+                });
+                this.$.slider.addEventListener('change', function(e){
+                    var status = self.status;
+
+                    self.pause();
+                    self.currentTime = this.value;
+                    self.progressTime = this.value;
+                    self.updateProcessTime = true;
+
+                    if( status === "play") self.play();
+
+                });
+
+                this.$['volume-slider'].addEventListener('change', function(e){
+                    console.log(this.value/100);
+                    self.volume = this.value/100;
+                    self.currentVolume = this.value;
+                });
+
+                var storageHandler = function(){
+                    alert(1);
+                    //self.vis_config = JSON.parse(localStorage.getItem("vis_config"));
+                    //self.visualizer_controller();
+                };
+
+                window.addEventListener("storage", function(){
+                    alert(1);
+                    //self.vis_config = JSON.parse(localStorage.getItem("vis_config"));
+                    //self.visualizer_controller();
+                }, false);
+
+            },
+            handleResponse: function(e, data) {
+                //console.log('Playlist: ', data.response);
+                this.audioCount = data.response.response.count;
+                this.playlist = data.response.response.items;
+                this.currentTrackIndex = 0;
+                this.currentTrack = this.playlist[0];
+                //console.log(this.currentTrack);
+            },
+            togglePlay: function(){
+                if(this.paused){
+                    this.play();
+                } else {
+                    this.pause();
+                }
+            },
+            _currentTrackChanged: function(track, oldTrack){
+                this.src = track.url;
+                this.$.slider.value = 0;
+                this.$.progress.value = 0;
+                this.playedTime = "0:00";
+            },
+            playTrack: function (index) {
+                this.playedTime = "0:00";
+                this.currentTrackIndex = index;
+                this.currentTrack = this.playlist[index];
+                this.play();
+            },
+            stopPlay: function(){
+                this.pause();
+                this.$.slider.value = 0;
+                this.currentTime = 0;
+                this.playedTime = "0:00";
+            },
+            moveToPrev: function () {
+                this.$.progress.value = 0;
+                this.progress = 0;
+                this.currentTime = 0;
+                var newIndex = this.currentTrackIndex - 1;
+                newIndex = (newIndex < 0)? this.playlist.length - 1 : newIndex;
+                this.currentTrackIndex = newIndex;
+                this.currentTrack = this.playlist[this.currentTrackIndex];
+                if(this.status === 'play') this.play();
+            },
+            moveToNext: function () {
+                this.$.progress.value = 0;
+                this.progress = 0;
+                var newIndex = this.currentTrackIndex + 1;
+                newIndex = (newIndex > (this.playlist.length - 1)) ? 0 : newIndex;
+                this.currentTrackIndex = newIndex;
+                this.currentTrack = this.playlist[this.currentTrackIndex];
+                if(this.status === 'play') this.play();
+            },
+            playBtnIcon: function(status) {
+                if(status === "pause"){
+                    return 'av:play-arrow';
+                } else {
+                    return 'av:pause';
+                }
+            },
+            bufferization: function(){
+                var buffered = this.buffer; // in seconds
+                var buffered_percents;
+                var time = this.duration;
+
+                try{
+                    this.buffer = (Math.floor(this.buffered.end(0) * 1000) / 1000) || 0;
+                    buffered_percents = buffered * 100 / time;
+                }catch(e){}
+
+                if(time && Math.abs(time - buffered) < 0.1){
+                    //console.log('Buffered: 100%! the end.');
+                }else{
+                    var percent = Math.ceil(buffered / time * 100);
+                    percent = Math.min(100, Math.max(0, percent));
+                    if(!isNaN(percent)){
+                        //console.log('Buffered: '+ percent +'%');
+                    }
+                }
+            },
+            visualizer_controller: function () {
+                var self = this;
+                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                var analyser = audioCtx.createAnalyser();
+                var source = audioCtx.createMediaElementSource(this);
+                var canvas = this.$.canvas;
+                var config = app.vis_config;
+
+                if(config.visualizer_status){
+                    if(config.visualizer_name == "oscilloscope"){
+
+                        self.draw_oscilloscope(source, analyser, audioCtx, canvas);
+
+                    }else if(config.visualizer_name == "frequency_bar"){
+
+                        self.draw_frequency_bar(source, analyser, audioCtx, canvas);
+
+                    }
+                }
+            },
+            //visualizers
+            draw_oscilloscope: function(source, analyser, audioCtx, canvas) {
+                var WIDTH = 256, HEIGHT = 50;
+                var bufferLength = analyser.frequencyBinCount;
+                var dataArray = new Uint8Array(bufferLength);
+                var canvasCtx = canvas.getContext("2d");
+
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                analyser.fftSizeOs = 2048;
+                canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+                //drawVisualOs = requestAnimationFrame(draw_oscilloscope);
+
+                setInterval(function(){
+
+                    analyser.getByteFrequencyData(dataArray);
+
+                    canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+                    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+                    canvasCtx.lineWidth = 2;
+                    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+                    canvasCtx.beginPath();
+
+                    var sliceWidth = WIDTH * 1.0 / bufferLength;
+                    var x = 0;
+
+                    for(var i = 0; i < bufferLength; i++) {
+
+                        var v = dataArray[i] / 128.0;
+                        var y = v * HEIGHT/5;
+
+                        if(i === 0) {
+                            canvasCtx.moveTo(0, 25);
+                        } else {
+                            canvasCtx.lineTo(x+2, y+25);
+                        }
+
+                        x += sliceWidth;
+                    }
+
+                    canvasCtx.lineTo(canvas.width, canvas.height/2);
+                    canvasCtx.stroke();
+                },50);
+
+            },
+            draw_frequency_bar: function(source, analyser, audioCtx, canvas) {
+                //drawVisualFB = requestAnimationFrame(draw_frequency_bar);
+                var WIDTH = 256, HEIGHT = 50;
+                var bufferLength = analyser.frequencyBinCount;
+                var dataArray = new Uint8Array(bufferLength);
+                var canvasCtx = canvas.getContext("2d");
+
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                analyser.fftSizeOs = 2048;
+
+//                var a = 1000;
+                var setint = setInterval(function(){
+//                    if (a < 1 ) {clearInterval(setint); console.log("finish;"); return;}
+//                    a -= 1;
+
+                    analyser.getByteFrequencyData(dataArray);
+
+                    canvasCtx.fillStyle = '#000';
+                    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+                    //var barWidth = (WIDTH / bufferLength) * 0.6; // ширина полосы
+                    var barWidth = (WIDTH / bufferLength) * app.vis_config.line_width; // ширина полосы
+                    var barHeight;
+                    var x = 0;
+
+                    canvasCtx.beginPath();
+
+                    var spaceBetween = parseFloat(app.vis_config.space_between);
+                    for(var i = 0; i < bufferLength; i++) {
+                        barHeight = dataArray[i];
+
+                        //one colour:
+                        //canvasFBCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+
+                        //rainbow:
+                        var hue = i/bufferLength * 360;
+                        canvasCtx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+                        canvasCtx.fillRect(x,HEIGHT-barHeight/5,barWidth,barHeight);
+
+                        //x += barWidth + 0.2; // растояние
+                        x += barWidth + spaceBetween; // растояние !!!!!!!!!!!!not work
+                        //console.log(app.vis_config.space_between);
+                    }
+                }, 20);
+            },
+            getAudioInfo: function(){
+                return {
+                    playlist: this.playlist,
+                    playedTime: this.playedTime,
+                    status: this.status,
+                    currentTrack: this.currentTrack,
+                    currentTrackIndex: this.currentTrackIndex,
+                    audioCount: this.audioCount
+                }
+            }
+        })
+    </script>
+</dom-module>>
