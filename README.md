@@ -1,2 +1,2 @@
 # Vk_desktop
-Desctop App  for vk.com
+Desktop App  for vk.com
