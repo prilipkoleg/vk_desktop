@@ -23,7 +23,6 @@ $ npm start
 ```
 
 
-> Пример для Windows можно скачать по [ссылке].
-> Чтобы открыть нужно запустить vk_desktop.exe.
+> РџСЂРёРјРµСЂ РґР»СЏ Windows РјРѕР¶РЅРѕ СЃРєР°С‡Р°С‚СЊ РїРѕ [СЃСЃС‹Р»РєРµ]. Р§С‚РѕР±С‹ РѕС‚РєСЂС‹С‚СЊ РЅСѓР¶РЅРѕ Р·Р°РїСѓСЃС‚РёС‚СЊ vk_desktop.exe. 
 
-[ссылке]: <https://drive.google.com/open?id=0B4AuNfZNhVmvZVRqSVQ3dDZFUnc>
+[СЃСЃС‹Р»РєРµ]: <https://drive.google.com/open?id=0B4AuNfZNhVmvZVRqSVQ3dDZFUnc>
