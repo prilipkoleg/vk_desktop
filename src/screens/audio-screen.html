@@ -161,10 +161,10 @@
             scrollHandler: function(e, val){
                 var percent = (val.target.scrollTop * 100 / val.target.scrollHeight).toFixed(2);
                 console.log("scrolled:" ,percent, "%");
-                if(percent > 0.5 && percent < 0.6) {
+                //if(percent > 0.5 && percent < 0.6) {
 //                    this.$.audioList.scrollToIndex(550);
                     this.$.audioList.fire('iron-resize');
-                }
+                //}
                 //this.$.audioList.fire('iron-resize');
 
             }
