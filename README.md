@@ -9,12 +9,12 @@ $ git clone git@github.com:prilipkoleg/vk_desktop.git .
 
 2:
 ```sh
-$ npm update
+$ npm i
 ```
 
 3:
 ```sh
-$ bower update
+$ bower i
 ```
 
 4:
